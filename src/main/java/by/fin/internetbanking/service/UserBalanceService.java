@@ -25,7 +25,6 @@ public class UserBalanceService {
         return userBalance.getBalance();
     }
 
-    @Transactional(readOnly = false)
     public int withdrawMoney(Long longUserId, BigDecimal moneyAmount) {
         UserBalance userBalance = userBalanceRepository.findById(longUserId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + longUserId));

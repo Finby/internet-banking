@@ -9,8 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController()
 @RequestMapping("bank-api-v1.0")
@@ -50,7 +48,6 @@ public class BankAPI {
             @RequestParam String userId,
             @RequestParam BigDecimal moneyAmount
     ) {
-        BigDecimal userCurrentBalance;
         if (userId == null || userId.isEmpty()) {
             return ResponseEntity.badRequest().body(new CustomResponse(-1, "UserID is required"));
         }
