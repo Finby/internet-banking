@@ -27,9 +27,20 @@ public class UserBalanceService {
     public int withdrawMoney(Long longUserId, BigDecimal moneyAmount) {
         UserBalance userBalance = userBalanceRepository.findById(longUserId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + longUserId));
-//        if (result == 1) {
-//            UserBalance userBalance2 = userBalanceRepository.save(userBalance);
-//        }
-        return userBalance.removeMoney(moneyAmount);
+        int result =  userBalance.removeMoney(moneyAmount);
+        if (result == 1) {
+            userBalanceRepository.save(userBalance);
+        }
+        return result;
+    }
+
+    public int addMoney(Long longUserId, BigDecimal moneyAmount) {
+        UserBalance userBalance = userBalanceRepository.findById(longUserId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + longUserId));
+        int result =  userBalance.addMoney(moneyAmount);
+        if (result == 1) {
+            userBalanceRepository.save(userBalance);
+        }
+        return result;
     }
 }

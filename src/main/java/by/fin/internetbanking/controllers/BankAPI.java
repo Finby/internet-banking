@@ -73,6 +73,37 @@ public class BankAPI {
         }
     }
 
+    @GetMapping("/putMoney")
+    @Operation(summary = "Get balance by userId or -1 with an error message explaining the problem.")
+    public ResponseEntity<CustomResponse> putMoney(
+            @RequestParam String userId,
+            @RequestParam BigDecimal moneyAmount
+    ) {
+        if (userId == null || userId.isEmpty()) {
+            return ResponseEntity.badRequest().body(new CustomResponse(-1, "UserID is required"));
+        }
+        if (moneyAmount == null) {
+            return ResponseEntity.badRequest().body(new CustomResponse(-1, "moneyAmount is required"));
+        }
+
+        try {
+            Long longUserId = Long.valueOf(userId);
+            if (!userBalanceService.doesUserExist(longUserId)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomResponse(-1, "User with UserID " + longUserId + " not found."));
+            }
+            int operationResult = userBalanceService.addMoney(longUserId, moneyAmount);
+            if (operationResult == 1) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomResponse(1, "Successful added " + moneyAmount + " for user " + longUserId + " and new balance  " + userBalanceService.getBalance(longUserId) + "$"));
+            }
+            else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomResponse(0, "something went wrong and " + moneyAmount + " wasn't added to balance"));
+            }
+
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body(new CustomResponse(-1, "Invalid UserID format"));
+        }
+    }
+
     @Data
     @AllArgsConstructor
     class CustomResponse {
