@@ -16,17 +16,6 @@ import java.util.Map;
 @RequestMapping("bank-api-v1.0")
 public class BankAPI {
 
-    // Simulated user data for demonstration purposes
-    private static final Map<Long, Double> userBalances = new HashMap<>();
-
-    static {
-        userBalances.put(1L, 100.0);
-        userBalances.put(2L, 50.0);
-        userBalances.put(3L, 200.0);
-    }
-
-
-
     private final UserBalanceService userBalanceService;
 
     public BankAPI(UserBalanceService userBalanceService) {
@@ -55,6 +44,37 @@ public class BankAPI {
         }
     }
 
+    @GetMapping("/takeMoney")
+    @Operation(summary = "Get balance by userId or -1 with an error message explaining the problem.")
+    public ResponseEntity<CustomResponse> takeMoney(
+            @RequestParam String userId,
+            @RequestParam BigDecimal moneyAmount
+    ) {
+        BigDecimal userCurrentBalance;
+        if (userId == null || userId.isEmpty()) {
+            return ResponseEntity.badRequest().body(new CustomResponse(-1, "UserID is required"));
+        }
+        if (moneyAmount == null) {
+            return ResponseEntity.badRequest().body(new CustomResponse(-1, "moneyAmount is required"));
+        }
+
+        try {
+            Long longUserId = Long.valueOf(userId);
+            if (!userBalanceService.doesUserExist(longUserId)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomResponse(-1, "User with UserID " + longUserId + " not found."));
+            }
+            int operationResult = userBalanceService.withdrawMoney(longUserId, moneyAmount);
+            if (operationResult == 1) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomResponse(1, "Successful withdraw for user " + longUserId + " of " + moneyAmount + "$"));
+            }
+            else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomResponse(0, "User ("+ userId + " don't have enough money (" + moneyAmount + ")"));
+            }
+
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body(new CustomResponse(-1, "Invalid UserID format"));
+        }
+    }
 
     @Data
     @AllArgsConstructor

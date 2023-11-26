@@ -5,6 +5,7 @@ import by.fin.internetbanking.repository.UserBalanceRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
@@ -22,5 +23,15 @@ public class UserBalanceService {
         UserBalance userBalance = userBalanceRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + id));
         return userBalance.getBalance();
+    }
+
+    @Transactional(readOnly = false)
+    public int withdrawMoney(Long longUserId, BigDecimal moneyAmount) {
+        UserBalance userBalance = userBalanceRepository.findById(longUserId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + longUserId));
+//        if (result == 1) {
+//            UserBalance userBalance2 = userBalanceRepository.save(userBalance);
+//        }
+        return userBalance.removeMoney(moneyAmount);
     }
 }
