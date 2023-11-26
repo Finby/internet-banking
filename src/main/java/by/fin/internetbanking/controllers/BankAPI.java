@@ -91,6 +91,7 @@ public class BankAPI {
             if (!userBalanceService.doesUserExist(longUserId)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomResponse(-1, "User with UserID " + longUserId + " not found."));
             }
+
             int operationResult = userBalanceService.addMoney(longUserId, moneyAmount);
             if (operationResult == 1) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomResponse(1, "Successful added " + moneyAmount + " for user " + longUserId + " and new balance  " + userBalanceService.getBalance(longUserId) + "$"));
