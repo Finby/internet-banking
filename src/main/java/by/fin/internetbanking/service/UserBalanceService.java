@@ -4,7 +4,6 @@ import by.fin.internetbanking.entity.UserBalance;
 import by.fin.internetbanking.repository.UserBalanceRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,13 +47,13 @@ public class UserBalanceService {
     }
 
     @Transactional
-    public int transferMoneyFromUserToUser(Long toUserId, Long fromUserId, BigDecimal moneyAmount) throws NotEnoughMoneyExceptions {
+    public int transferMoneyFromUserToUser(Long toUserId, Long fromUserId, BigDecimal moneyAmount) throws NotEnoughMoneyException {
         UserBalance toUserBalance = userBalanceRepository.findById(toUserId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + toUserId));
         UserBalance fromUserBalance = userBalanceRepository.findById(fromUserId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + fromUserId));
         if (moneyAmount.compareTo(fromUserBalance.getBalance()) == 1) {
-            throw new NotEnoughMoneyExceptions("Not enough money on balance of user " + fromUserBalance + " to transfer " + moneyAmount);
+            throw new NotEnoughMoneyException("Not enough money on balance of user " + fromUserBalance.getId() + " to transfer " + moneyAmount);
         }
         int result1 = fromUserBalance.removeMoney(moneyAmount);
         int result2 = toUserBalance.addMoney(moneyAmount);

@@ -1,6 +1,6 @@
 package by.fin.internetbanking.controllers;
 
-import by.fin.internetbanking.service.NotEnoughMoneyExceptions;
+import by.fin.internetbanking.service.NotEnoughMoneyException;
 import by.fin.internetbanking.service.UserBalanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.persistence.EntityNotFoundException;
@@ -133,7 +133,7 @@ public class BankAPI {
             return ResponseEntity.badRequest().body(new CustomResponse(-1, "Invalid UserID format"));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.badRequest().body(new CustomResponse(-1, e.getMessage()));
-        } catch (NotEnoughMoneyExceptions e) {
+        } catch (NotEnoughMoneyException e) {
             return ResponseEntity.badRequest().body(new CustomResponse(-1, e.getMessage()));
         }
 
