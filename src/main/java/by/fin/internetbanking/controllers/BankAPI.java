@@ -1,7 +1,9 @@
 package by.fin.internetbanking.controllers;
 
+import by.fin.internetbanking.service.NotEnoughMoneyExceptions;
 import by.fin.internetbanking.service.UserBalanceService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
@@ -62,7 +64,7 @@ public class BankAPI {
             }
             int operationResult = userBalanceService.withdrawMoney(longUserId, moneyAmount);
             if (operationResult == 1) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomResponse(1, "Successful withdraw for user " + longUserId + " of " + moneyAmount + "$"));
+                return ResponseEntity.status(HttpStatus.OK).body(new CustomResponse(1, "Successful withdraw for user " + longUserId + " of " + moneyAmount + "$"));
             }
             else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomResponse(0, "User ("+ userId + " don't have enough money (" + moneyAmount + ")"));
@@ -94,7 +96,7 @@ public class BankAPI {
 
             int operationResult = userBalanceService.addMoney(longUserId, moneyAmount);
             if (operationResult == 1) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomResponse(1, "Successful added " + moneyAmount + " for user " + longUserId + " and new balance  " + userBalanceService.getBalance(longUserId) + "$"));
+                return ResponseEntity.status(HttpStatus.OK).body(new CustomResponse(1, "Successful added " + moneyAmount + " for user " + longUserId + " and new balance  " + userBalanceService.getBalance(longUserId) + "$"));
             }
             else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CustomResponse(0, "something went wrong and " + moneyAmount + " wasn't added to balance"));
@@ -105,6 +107,38 @@ public class BankAPI {
         }
     }
 
+    @GetMapping("/transferMoney")
+    @Operation(summary = "transfer money from on User to another User.")
+    public ResponseEntity<CustomResponse> transferMoney(
+            @RequestParam String ToUserId,
+            @RequestParam String FromUserId,
+            @RequestParam BigDecimal moneyAmount
+    ) {
+        try {
+            int result = userBalanceService.transferMoneyFromUserToUser(
+                    Long.valueOf(ToUserId),
+                    Long.valueOf(FromUserId),
+                    moneyAmount
+            );
+            if (result == 1) {
+                return ResponseEntity.status(HttpStatus.OK).body(
+                        new CustomResponse(1,
+                                "Successfully transferred " + moneyAmount + "$ to " + ToUserId + " from user " + FromUserId
+                        )
+                );
+            } else {
+                return ResponseEntity.status(HttpStatus.SEE_OTHER).body(new CustomResponse(-1, "Something went wrong"));
+            }
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body(new CustomResponse(-1, "Invalid UserID format"));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.badRequest().body(new CustomResponse(-1, e.getMessage()));
+        } catch (NotEnoughMoneyExceptions e) {
+            return ResponseEntity.badRequest().body(new CustomResponse(-1, e.getMessage()));
+        }
+
+
+    }
     @Data
     @AllArgsConstructor
     class CustomResponse {
